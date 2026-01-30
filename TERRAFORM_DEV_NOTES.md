@@ -25,7 +25,7 @@
 ## [2026-01-30] 인프라 확장 및 운영 고도화
 
 ### 1. 작업 개요
-- **목표:** 컴퓨트 및 데이터베이스 리소스 배포, 보안 최적화 및 아키텍처 문서화
+- **목표:** 컴퓨트 및 데이터베이스 리소스 배포, 보안 최적화, 아키텍처 문서화 및 비용 절감을 위한 리소스 상태 제어
 
 ### 2. 주요 수행 내역
 
@@ -41,6 +41,10 @@
 - **Visualization:** Mermaid를 활용한 아키텍처 다이어그램(`ARCHITECTURE.md`) 자동 생성 및 업데이트
 - **GitHub:** Fine-grained PAT를 통해 원격 저장소 연동 및 문서 푸시 완료
 - **Security:** `.gitignore` 도입으로 개인키 및 상태 파일의 외부 노출 원천 차단
+
+#### 2.4 리소스 중지 (Cost Management)
+- **Compute:** Terraform 코드를 수정하여 모든 인스턴스를 `STOPPED` 상태로 전환
+- **Database:** Terraform의 제약(State 변경 미지원)으로 인해 OCI CLI(`oci db autonomous-database stop`)를 사용하여 ADB 중지 처리
 
 ---
 *본 노트는 Gemini CLI Agent에 의해 자동 생성 및 업데이트되었습니다.*
