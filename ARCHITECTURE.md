@@ -11,6 +11,7 @@ graph TD
     classDef vcn fill:#e6f3ff,stroke:#0066cc,stroke-width:2px;
     classDef subnet fill:#e6ffe6,stroke:#009933,stroke-width:2px;
     classDef compute fill:#ffcc00,stroke:#cc9900,stroke-width:2px;
+    classDef db fill:#00d4ff,stroke:#00a3cc,stroke-width:2px;
     classDef gateway fill:#ff9999,stroke:#cc3300,stroke-width:2px;
     classDef internet fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
 
@@ -31,6 +32,8 @@ graph TD
                         Inst1[("Compute: test-1<br/>(VM.Standard.A1.Flex)<br/>1 OCPU, 6GB RAM")]:::compute
                         Inst2[("Compute: test-2<br/>(VM.Standard.A1.Flex)<br/>1 OCPU, 6GB RAM")]:::compute
                     end
+
+                    ADB[("Autonomous DB<br/>(26ai, ECPU Model)<br/>2 ECPUs, 1TB TB")]:::db
                 end
                 
                 RT[Route Table: public-rt]
@@ -43,9 +46,10 @@ graph TD
     IGW <==> RT
     RT ==> PubSub
     
-    %% Implicit connections within subnet
+    %% Connections
     PubSub --- Inst1
     PubSub --- Inst2
+    Comp --- ADB
 
     %% Styling
     class Comp compartment
@@ -61,6 +65,5 @@ graph TD
 | **Region** | ap-chuncheon-1 | - | 춘천 리전 |
 | **VCN** | terraform-test-vcn | `192.0.0.0/16` | 메인 가상 네트워크 |
 | **Subnet** | public-subnet | `192.0.1.0/24` | 외부 접속이 가능한 Public Subnet |
-| **Gateway** | test-igw | - | Internet Gateway (인터넷 통신용) |
-| **Compute** | test-1 | VM.Standard.A1.Flex | Oracle Linux 9 (ARM), 1 OCPU, 6GB RAM |
-| **Compute** | test-2 | VM.Standard.A1.Flex | Oracle Linux 9 (ARM), 1 OCPU, 6GB RAM |
+| **Compute** | test-1 / test-2 | VM.Standard.A1.Flex | Oracle Linux 9 (ARM), 1 OCPU, 6GB RAM |
+| **Database** | test-autonomous-db | 26ai (ECPU) | Autonomous DB, 2 ECPUs, 1TB Storage |
