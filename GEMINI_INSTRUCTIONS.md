@@ -33,5 +33,6 @@
 - `provider.tf`: OCI Provider 설정.
 - `network.tf`: VCN, Subnet, Gateway, Route Table 등 네트워크 관련 리소스.
 - `compute.tf`: Compute Instance, Volume 등 컴퓨트 리소스.
+- `oracle-db.tf`: Autonomous Database (ADB) 관련 리소스.
 - `variables.tf`: 변수 정의.
 - `terraform.tfvars`: 변수 값 할당 (민감 정보 제외).
