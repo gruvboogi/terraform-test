@@ -77,5 +77,40 @@
 - **현황 유지:** 네트워크(VCN, Subnets, Gateways) 인프라는 향후 재사용을 위해 유지
 
 ---
+
+## [2026-02-02] OKE 클러스터 재구축 성공 및 트러블슈팅
+
+### 1. 작업 개요
+- **목표:** 수동 생성된 클러스터(`oke_sample`)를 역공학하여 Terraform 기반 OKE 클러스터(`v1.34.1`) 완전 자동 구축
+- **환경:** ENHANCED 클러스터, OCI VCN Native CNI 적용, ARM 기반 노드 풀
+
+### 2. 주요 트러블슈팅 및 해결 내역
+
+#### 2.1 이미지 가용성 및 검색 로직 개선
+- **문제:** `Oracle Linux 9` 및 특정 패치 버전 기반 이미지 검색 실패.
+- **분석:** 리전별 이미지 배포 시점 및 OS 버전(`8.10` 권장) 차이 확인.
+- **해결:** 제공된 공식 문서 가이드를 참조하여 **`Oracle Linux 8`** 기반의 OKE 전용 이미지 OCID(`...nwqa`)를 명시적으로 지정하여 해결.
+
+#### 2.2 노드 풀 및 쉐이프(Shape) 호환성
+- **오류:** `400-InvalidParameter: Node shape and image are not compatible.`
+- **원인:** 초기 지정한 OCID가 GPU 전용 이미지로, `VM.Standard.A1.Flex`(ARM) 쉐이프와 불일치.
+- **해결:** ARM 전용 OKE 이미지 OCID로 교체하여 프로비저닝 성공.
+
+#### 2.3 클러스터 애드온(Addons) 충돌 해결
+- **오류:** `409-Conflict, addon ... exists`
+- **원인:** ENHANCED 클러스터 생성 시 기본 애드온이 자동 설치되어 Terraform 리소스 생성과 충돌.
+- **해결:** `oci_containerengine_addon` 리소스에 **`override_existing = true`** 옵션을 추가하여 기존 설치본을 Terraform 관리하에 병합.
+
+#### 2.4 포드(Pod) 네트워크 옵션 동기화
+- **오류:** `Invalid NodePoolNetworkOption: NodePool pod network options didn't match cluster pod network options`
+- **해결:** 클러스터 레벨의 **`OCI_VCN_IP_NATIVE`** 설정에 맞춰 노드 풀 설정에도 동일한 CNI 타입과 `pod_subnet_ids`를 명시적으로 선언하여 해결.
+
+### 3. 최종 구축 성과
+- **클러스터 버전:** `v1.34.1` (성공)
+- **네트워크 보안:** OKE 전용 보안 목록(API 엔드포인트용, 노드용) 분리 구축으로 보안 강화.
+- **애드온 구성:** CoreDNS, KubeProxy, NvidiaGpuPlugin, OciVcnIpNative 구성 완료.
+- **인프라 상태:** 노드 풀 생성 및 노드 프로비저닝 단계 진입 확인.
+
+---
 *본 노트는 Gemini CLI Agent에 의해 자동 생성 및 업데이트되었습니다.*
 *참고: 상세한 리소스 상태 및 속성은 `terraform.tfstate` 파일을 참조하십시오.*
