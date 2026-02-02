@@ -111,6 +111,14 @@
 - **애드온 구성:** CoreDNS, KubeProxy, NvidiaGpuPlugin, OciVcnIpNative 구성 완료.
 - **인프라 상태:** 노드 풀 생성 및 노드 프로비저닝 단계 진입 확인.
 
+### 4. 추가 작업: 노드 풀 스케일 아웃 (Scale-Out)
+- **요청:** 워커 노드 수량을 1대에서 3대로 증설 요청.
+- **조치:** `oke.tf`의 `node_config_details.size`를 `3`으로 수정 후 `terraform apply`.
+- **결과:**
+    - 노드 2대 추가 생성 완료 (총 3대).
+    - Private IP 할당 확인: `192.0.10.31`, `192.0.10.110`, `192.0.10.35`.
+    - 모든 노드가 `OCI_VCN_IP_NATIVE` 네트워크 정책 하에 정상적으로 배포됨.
+
 ---
 *본 노트는 Gemini CLI Agent에 의해 자동 생성 및 업데이트되었습니다.*
 *참고: 상세한 리소스 상태 및 속성은 `terraform.tfstate` 파일을 참조하십시오.*
