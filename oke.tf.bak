@@ -1,0 +1,72 @@
+# oke.tf
+
+# 1. Get OKE Node Pool Options to find correct image for the K8s version
+data "oci_containerengine_node_pool_option" "test_node_pool_option" {
+  node_pool_option_id = "all"
+  compartment_id      = oci_identity_compartment.terraform_test.id
+}
+
+# 2. OKE Cluster (Basic Cluster - Free Control Plane)
+resource "oci_containerengine_cluster" "test_oke_cluster" {
+  compartment_id     = oci_identity_compartment.terraform_test.id
+  kubernetes_version = var.oke_k8s_version
+  name               = "terraform-oke-cluster"
+  vcn_id             = oci_core_vcn.test_vcn.id
+
+  # VCN Native Pod Networking (De Facto Standard)
+  endpoint_config {
+    is_public_ip_enabled = true
+    subnet_id            = oci_core_subnet.public_subnet.id
+  }
+
+  options {
+    service_lb_subnet_ids = [oci_core_subnet.public_subnet.id]
+    
+    add_ons {
+      is_kubernetes_dashboard_enabled = false
+      is_tiller_enabled               = false
+    }
+  }
+}
+
+# 3. Node Pool (Worker Nodes)
+resource "oci_containerengine_node_pool" "test_node_pool" {
+  cluster_id         = oci_containerengine_cluster.test_oke_cluster.id
+  compartment_id     = oci_identity_compartment.terraform_test.id
+  kubernetes_version = var.oke_k8s_version
+  name               = "pool1"
+  
+  # Placement: Private Subnet (Standard Security)
+  node_config_details {
+    placement_configs {
+      availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
+      subnet_id           = oci_core_subnet.private_subnet.id
+    }
+    size = 1 # Minimum size
+  }
+
+  # Shape: ARM A1.Flex (Most Cost Effective)
+  node_shape = "VM.Standard.A1.Flex"
+
+  node_shape_config {
+    memory_in_gbs = 6
+    ocpus         = 1
+  }
+
+  # Image Source: Find the first available image for ARM (aarch64) matching the K8s version
+  node_source_details {
+    image_id = [
+      for source in data.oci_containerengine_node_pool_option.test_node_pool_option.sources :
+      source.image_id if length(regexall("aarch64", source.source_name)) > 0 && 
+                         length(regexall(format("%s-", substr(var.oke_k8s_version, 1, -1)), source.source_name)) > 0
+    ][0]
+    source_type = "IMAGE"
+  }
+
+  # SSH Access
+  ssh_public_key = file(var.ssh_public_key_path)
+}
+
+output "oke_cluster_id" {
+  value = oci_containerengine_cluster.test_oke_cluster.id
+}

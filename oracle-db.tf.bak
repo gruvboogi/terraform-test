@@ -1,0 +1,26 @@
+# oracle-db.tf
+
+# Define an OCI Autonomous Database
+resource "oci_database_autonomous_database" "test_autonomous_database" {
+  # Required parameters
+  compartment_id           = oci_identity_compartment.terraform_test.id
+  db_name                  = var.db_name
+  admin_password           = var.db_admin_password
+  compute_model            = "ECPU"
+  compute_count            = 2
+  data_storage_size_in_tbs = 1           # Minimum Storage in TB
+  db_workload              = var.db_workload
+  display_name             = "test-autonomous-db"
+
+  # Optional parameters
+  is_free_tier             = false       # Set to true for Always Free
+  license_model            = "BRING_YOUR_OWN_LICENSE" 
+  db_version               = "26ai"      # Oracle Database 26ai
+
+  # Networking (Optional: Access from everywhere by default if not specified)
+  # To restrict access, configure whitelisted_ips or use a private endpoint.
+}
+
+output "autonomous_database_id" {
+  value = oci_database_autonomous_database.test_autonomous_database.id
+}

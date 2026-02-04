@@ -125,5 +125,32 @@
 - **결과:** 워커 노드 3대 모두 Terminated 완료. 클러스터 및 네트워크 인프라는 유지하여 재사용 가능성 확보.
 
 ---
+
+## [2026-02-04] Network Load Balancer 구축 및 Compute 복구
+
+### 1. 작업 개요
+- **목표:** Public Subnet에 Network Load Balancer(NLB)를 구축하고, 삭제되었던 Compute 인스턴스 2대를 복구하여 백엔드로 연결.
+- **범위:** NLB(Layer 4), Backend Set, Listener, Security List 추가 및 Compute 인스턴스(ARM) 생성.
+
+### 2. 주요 수행 내역
+
+#### 2.1 인프라 복구 및 확장
+- **Compute:** `variables.tf`의 `instance_count`를 `2`로 변경하고 `state`를 `RUNNING`으로 설정하여 `test-1`, `test-2` 인스턴스 재생성.
+- **Network:** HTTP(80) 트래픽 허용을 위한 `lb-security-list` 생성 및 Public Subnet에 적용.
+
+#### 2.2 Load Balancer 설정 (`load_balancer.tf`)
+- **NLB 생성:** `test-nlb` (Public Facing) 생성 완료.
+- **리스너 및 백엔드:** 
+    - 80번 포트(TCP) 리스닝 및 백엔드 세트 구성.
+    - **헬스 체크 최적화:** 초기 80번 포트에서 **22번 포트(SSH)**로 변경하여 인스턴스 기본 서비스 응답 기반 가용성 체크 적용.
+    - `for_each`를 사용하여 생성된 모든 Compute 인스턴스를 백엔드로 자동 등록.
+
+### 3. 결과 확인
+- **NLB Public IP:** `168.107.38.86`
+- **Compute IPs:** 
+    - `test-1`: `168.107.36.142` (Private: `192.0.1.20`)
+    - `test-2`: `158.180.83.166` (Private: `192.0.1.123`)
+- **상태:** 모든 리소스가 `ACTIVE` 또는 `RUNNING` 상태이며, NLB를 통해 백엔드 인스턴스로 트래픽 분산 준비 완료.
+
+---
 *본 노트는 Gemini CLI Agent에 의해 자동 생성 및 업데이트되었습니다.*
-*참고: 상세한 리소스 상태 및 속성은 `terraform.tfstate` 파일을 참조하십시오.*
