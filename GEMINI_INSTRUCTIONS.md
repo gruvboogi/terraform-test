@@ -18,6 +18,14 @@
 - **SSH 키:** 인스턴스 접속용 키는 `./ssh-key/` 폴더 내의 파일을 사용하며, `file()` 함수로 참조한다.
 - **민감 정보:** `*.key` (Private Key), `*.tfvars`, `*.tfstate` 파일은 `.gitignore`에 등록하여 절대 외부로 유출되지 않도록 한다.
 
+### 2.3 Git 및 저장소 정책 (Git Repository Policy) - CRITICAL
+- **Markdown Only:** 원격 저장소(GitHub)에는 오직 `*.md` (문서) 파일만 푸시한다.
+- **Push 금지:** Terraform 코드(`*.tf`), 상태 파일(`*.tfstate`), 설정 파일, 키, 이미지 등은 **절대** 원격 저장소에 올리지 않는다. 로컬에서만 관리한다.
+- **Commit 수칙:**
+    - `git add .` 사용을 **엄격히 금지**한다. (의도치 않은 파일 포함 방지)
+    - 반드시 `git add *.md` 또는 `git add <파일명>`을 사용하여 명시적으로 파일만 스테이징한다.
+    - 커밋 전 `git status`를 통해 불필요한 파일이 포함되지 않았는지 2차 검증한다.
+
 ## 3. 작업 워크플로우 (Workflow)
 
 1.  **사전 검증:** 모든 리소스 변경 전 반드시 `terraform plan`을 수행하여 변경 사항을 시뮬레이션한다.

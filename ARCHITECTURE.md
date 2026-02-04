@@ -15,6 +15,7 @@ graph TD
     classDef gateway fill:#ff9999,stroke:#cc3300,stroke-width:2px;
     classDef internet fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
     classDef oke fill:#326ce5,stroke:#2856ad,stroke-width:2px,color:#fff;
+    classDef lb fill:#99ccff,stroke:#0066cc,stroke-width:2px;
 
     Internet((Internet)):::internet
 
@@ -31,35 +32,34 @@ graph TD
                     
                     subgraph PubSub ["Public Subnet (192.0.1.0/24)"]
                         direction TB
+                        NLB["Network Load Balancer<br/>(test-nlb)"]:::lb
                         Inst1[("Compute: test-1<br/>(A1.Flex)")]:::compute
                         Inst2[("Compute: test-2<br/>(A1.Flex)")]:::compute
                     end
 
                     subgraph PrivSub ["Private Subnet (192.0.10.0/24)"]
                         direction TB
-                        Node1[("OKE Worker Node<br/>(Target State)")]:::compute
+                        NodeEmpty["OKE Worker Nodes<br/>(Current: 0)"]:::compute
                     end
 
-                    ADB[("Autonomous DB<br/>(26ai, ECPU)")]:::db
+                    ADB_ST["Autonomous DB<br/>(STOPPED)"]:::db
                 end
                 
-                OKE_CP["OKE Control Plane<br/>(API Endpoint)"]:::oke
+                OKE_CP["OKE Control Plane<br/>(v1.34.1)"]:::oke
             end
         end
     end
 
     %% Network Flows
     Internet <==> IGW
-    IGW --- PubSub
+    IGW --- NLB
+    NLB --- Inst1
+    NLB --- Inst2
     NAT --- PrivSub
     SGW --- PrivSub
     
     %% Connections
-    PubSub --- Inst1
-    PubSub --- Inst2
-    PrivSub --- Node1
     PubSub --- OKE_CP
-    Comp --- ADB
 
     %% Styling
     class Comp compartment
@@ -75,9 +75,9 @@ graph TD
 | :--- | :--- | :--- | :--- |
 | **Region** | ap-chuncheon-1 | - | 춘천 리전 |
 | **VCN** | terraform-test-vcn | `192.0.0.0/16` | 메인 가상 네트워크 |
-| **Subnet (Public)** | public-subnet | `192.0.1.0/24` | 외부 접속용 서브넷 (Compute, OKE API) |
-| **Subnet (Private)** | private-subnet | `192.0.10.0/24` | 보안 서브넷 (OKE Worker Nodes 배치용) |
-| **Gateways** | IGW / NAT / SGW | - | 인터넷 및 OCI 서비스 통신용 게이트웨이 세트 |
-| **Compute** | test-1 / test-2 | VM.Standard.A1.Flex | Oracle Linux 9 (ARM), 현재 STOPPED 상태 |
-| **Database** | test-autonomous-db | 26ai (ECPU) | Autonomous DB, 2 ECPUs, 현재 STOPPED 상태 |
-| **OKE (Target)** | terraform-oke-cluster | v1.31.10 | 쿠버네티스 클러스터 (수동 생성 예정) |
+| **Subnet (Public)** | public-subnet | `192.0.1.0/24` | 외부 접속용 (NLB, Compute, OKE API) |
+| **Subnet (Private)** | private-subnet | `192.0.10.0/24` | 보안 서브넷 (OKE Worker Nodes용) |
+| **Network LB** | test-nlb | Layer 4 (TCP) | **Public IP: 168.107.38.86**, 포트 80 리스닝 |
+| **Compute** | test-1 / test-2 | VM.Standard.A1.Flex | Oracle Linux 9 (ARM), NLB 백엔드로 연결됨 |
+| **Database** | test-autonomous-db | 26ai (ECPU) | Autonomous DB, 현재 STOPPED 상태 |
+| **OKE** | terraform-oke-cluster | v1.34.1 | 클러스터 활성 상태, 워커 노드 0대 |
