@@ -1,6 +1,6 @@
 # OCI Infrastructure Architecture
 
-이 문서는 Terraform을 통해 구축된 현재(`2026-01-30` 기준) OCI 인프라 아키텍처를 시각화한 것입니다.
+이 문서는 Terraform을 통해 구축된 현재(`2026-02-05` 기준) OCI 인프라 아키텍처를 시각화한 것입니다.
 
 ## Infrastructure Diagram
 
@@ -16,6 +16,7 @@ graph TD
     classDef internet fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
     classDef oke fill:#326ce5,stroke:#2856ad,stroke-width:2px,color:#fff;
     classDef lb fill:#99ccff,stroke:#0066cc,stroke-width:2px;
+    classDef reserve fill:#f9f,stroke:#333,stroke-width:2px;
 
     Internet((Internet)):::internet
 
@@ -33,8 +34,8 @@ graph TD
                     subgraph PubSub ["Public Subnet (192.0.1.0/24)"]
                         direction TB
                         NLB["Network Load Balancer<br/>(test-nlb)"]:::lb
-                        Inst1[("Compute: test-1<br/>(A1.Flex)")]:::compute
-                        Inst2[("Compute: test-2<br/>(A1.Flex)")]:::compute
+                        Inst1[("Compute: test-1<br/>(STOPPED)")]:::compute
+                        Inst2[("Compute: test-2<br/>(STOPPED)")]:::compute
                     end
 
                     subgraph PrivSub ["Private Subnet (192.0.10.0/24)"]
@@ -42,7 +43,9 @@ graph TD
                         NodeEmpty["OKE Worker Nodes<br/>(Current: 0)"]:::compute
                     end
 
-                    ADB_ST["Autonomous DB<br/>(STOPPED)"]:::db
+                    ADB_ST["Autonomous DB<br/>(DELETED)"]:::db
+                    
+                    CapRes["Capacity Reservation<br/>(ARM x 2)"]:::reserve
                 end
                 
                 OKE_CP["OKE Control Plane<br/>(v1.34.1)"]:::oke
@@ -78,6 +81,6 @@ graph TD
 | **Subnet (Public)** | public-subnet | `192.0.1.0/24` | 외부 접속용 (NLB, Compute, OKE API) |
 | **Subnet (Private)** | private-subnet | `192.0.10.0/24` | 보안 서브넷 (OKE Worker Nodes용) |
 | **Network LB** | test-nlb | Layer 4 (TCP) | **Public IP: 168.107.38.86**, 포트 80 리스닝 |
-| **Compute** | test-1 / test-2 | VM.Standard.A1.Flex | Oracle Linux 9 (ARM), NLB 백엔드로 연결됨 |
-| **Database** | test-autonomous-db | 26ai (ECPU) | Autonomous DB, 현재 STOPPED 상태 |
+| **Compute** | test-1 / test-2 | VM.Standard.A1.Flex | ARM (STOPPED), 현재 용량 예약 없음 |
+| **Capacity Reserve**| test-arm-capacity-reservation | ARM (1 OCPU, 6GB) x 2 | **신규 생성**, ARM 인스턴스 용량 선점용 |
 | **OKE** | terraform-oke-cluster | v1.34.1 | 클러스터 활성 상태, 워커 노드 0대 |

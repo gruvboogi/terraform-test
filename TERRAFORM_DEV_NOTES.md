@@ -154,3 +154,15 @@
 
 ---
 *본 노트는 Gemini CLI Agent에 의해 자동 생성 및 업데이트되었습니다.*
+
+## [2026-02-05] ARM Capacity Reservation 구축
+
+### 1. 작업 개요
+- **목표:** 춘천 리전 ARM 기반 인스턴스(`VM.Standard.A1.Flex`)의 안정적인 용량 확보를 위한 Reservation 생성
+- **범위:** Capacity Reservation (2 OCPU, 12GB RAM 선점)
+
+### 2. 주요 수행 내역
+- **리소스 생성:** `capacity_reservation.tf` 신규 작성 및 배포
+- **리소스 명칭:** `test-arm-capacity-reservation`
+- **예약 사양:** `VM.Standard.A1.Flex` (1 OCPU / 6GB Memory) x 2대
+- **검증 완료:** OCI CLI (`oci compute capacity-reservation get`)를 통해 `ACTIVE` 상태 및 예약 수량 확인 완료
