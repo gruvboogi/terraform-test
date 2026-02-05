@@ -82,5 +82,5 @@ graph TD
 | **Subnet (Private)** | private-subnet | `192.0.10.0/24` | 보안 서브넷 (OKE Worker Nodes용) |
 | **Network LB** | test-nlb | Layer 4 (TCP) | **Public IP: 168.107.38.86**, 포트 80 리스닝 |
 | **Compute** | test-1 / test-2 | VM.Standard.A1.Flex | ARM (STOPPED), 현재 용량 예약 없음 |
-| **Capacity Reserve**| test-arm-capacity-reservation | ARM (1 OCPU, 6GB) x 2 | **신규 생성**, ARM 인스턴스 용량 선점용 |
+| **Capacity Reserve**| test-arm-capacity-reservation | ARM (1 OCPU, 6GB) x 0 | **템플릿으로 유지**, 필요 시 수량 조정 가능 |
 | **OKE** | terraform-oke-cluster | v1.34.1 | 클러스터 활성 상태, 워커 노드 0대 |

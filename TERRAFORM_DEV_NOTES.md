@@ -166,3 +166,8 @@
 - **리소스 명칭:** `test-arm-capacity-reservation`
 - **예약 사양:** `VM.Standard.A1.Flex` (1 OCPU / 6GB Memory) x 2대
 - **검증 완료:** OCI CLI (`oci compute capacity-reservation get`)를 통해 `ACTIVE` 상태 및 예약 수량 확인 완료
+
+### 3. 연결 확인 및 템플릿화 (Scale-down to 0)
+- **연결 검증:** OCI CLI를 통해 인스턴스와 예약 리소스가 정상적으로 결합됨을 확인 (`UsedCount` 확인).
+- **연결 해제:** 인스턴스의 `capacity_reservation_id`를 제거하여 독립적인 상태로 복구.
+- **템플릿 전환:** `reserved_count`를 0으로 조정하여 실제 리소스 점유를 해제하고, 향후 재사용을 위해 코드는 `capacity_reservation.tf`에 유지.
